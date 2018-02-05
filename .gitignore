@@ -1,0 +1,6 @@
+.idea
+*.log
+*.xml
+*.out
+vendor
+_vendor-*
