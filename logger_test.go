@@ -38,7 +38,7 @@ func Example() {
 	ctx := operation.WithContext(context.Background())
 
 	logger.Debug("http request received",
-		operation.FromContextFirst(ctx),
+		operation.FromContextFirst(ctx, "pre-handler"),
 		zap.Object("httpRequest", zapstackdriver.HTTPRequest{
 			Method:    "GET",
 			URL:       "example.com",
@@ -47,10 +47,10 @@ func Example() {
 			RemoteIP:  "127.0.0.1",
 		}),
 	)
-	logger.Debug("something important happened", operation.FromContext(ctx))
+	logger.Debug("something important happened", operation.FromContext(ctx, "handler"))
 
 	logger.Debug("http response send",
-		operation.FromContextLast(ctx),
+		operation.FromContextLast(ctx, "post-handler"),
 		zap.Object("httpRequest", zapstackdriver.HTTPRequest{
 			Method:    "GET",
 			URL:       "example.com",
@@ -75,7 +75,7 @@ func BenchmarkEncoder(b *testing.B) {
 			if err != nil {
 				b.Fatalf("unexpected error: %s", err.Error())
 			}
-			opr := operation.FromContextFirst(context.Background())
+			opr := operation.FromContextFirst(context.Background(), "benchmark")
 
 			b.ResetTimer()
 

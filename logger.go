@@ -22,13 +22,13 @@ func init() {
 
 func NewStackdriverEncoderConfig() zapcore.EncoderConfig {
 	return zapcore.EncoderConfig{
-		TimeKey:       "eventTime",
-		LevelKey:      "severity",
-		NameKey:       "logger",
-		CallerKey:     "caller",
-		MessageKey:    "message",
-		StacktraceKey: "trace",
-		LineEnding:    zapcore.DefaultLineEnding,
+		TimeKey:    "eventTime",
+		LevelKey:   "severity",
+		NameKey:    "logger",
+		CallerKey:  "caller",
+		MessageKey: "message",
+		//StacktraceKey: "trace",
+		LineEnding: zapcore.DefaultLineEnding,
 		EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 			switch l {
 			case zapcore.DebugLevel:
@@ -78,6 +78,11 @@ func (e *Encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 			Line: ent.Caller.Line,
 		}))
 		ent.Caller.Defined = false
+	}
+
+	if ent.Stack != "" {
+		ent.Message = ent.Message + "\n" + ent.Stack
+		ent.Stack = ""
 	}
 
 	return e.Encoder.EncodeEntry(ent, fields)

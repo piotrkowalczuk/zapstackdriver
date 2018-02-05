@@ -21,12 +21,15 @@ func UnaryServerInterceptor(log *zap.Logger) grpc.UnaryServerInterceptor {
 		now := time.Now()
 		httpReq, ctx := contextBackground(ctx, info.FullMethod)
 
-		log.Debug("grpc unary request received by the server", zap.Object("httpRequest", httpReq), operation.FromContextFirst(ctx))
+		log.Debug("grpc unary request received by the server",
+			zap.Object("httpRequest", httpReq),
+			operation.FromContextFirst(ctx, "unary-server-interceptor-pre"),
+		)
 
 		res, err := handler(ctx, req)
 
 		httpReq.Latency = time.Since(now)
-		logRequest(ctx, log, err, httpReq)
+		logRequest(ctx, log, err, httpReq, "unary-server-interceptor-post")
 
 		return res, err
 	}
@@ -38,12 +41,15 @@ func StreamServerInterceptor(log *zap.Logger) grpc.StreamServerInterceptor {
 		now := time.Now()
 		httpReq, ctx := contextBackground(ctx, info.FullMethod)
 
-		log.Debug("grpc stream request received by the server", zap.Object("httpRequest", httpReq), operation.FromContextFirst(ctx))
+		log.Debug("grpc stream request received by the server",
+			zap.Object("httpRequest", httpReq),
+			operation.FromContextFirst(ctx, "stream-server-interceptor-pre"),
+		)
 
 		err := handler(srv, ss)
 
 		httpReq.Latency = time.Since(now)
-		logRequest(ctx, log, err, httpReq)
+		logRequest(ctx, log, err, httpReq, "stream-server-interceptor-post")
 
 		return err
 	}
@@ -64,7 +70,7 @@ func contextBackground(ctx context.Context, fullMethod string) (zapstackdriver.H
 	return httpReq, operation.WithContext(ctx)
 }
 
-func logRequest(ctx context.Context, log *zap.Logger, err error, req zapstackdriver.HTTPRequest) {
+func logRequest(ctx context.Context, log *zap.Logger, err error, req zapstackdriver.HTTPRequest, producer string) {
 	if st, ok := status.FromError(err); ok {
 		req.Status = int(st.Code())
 
@@ -72,18 +78,18 @@ func logRequest(ctx context.Context, log *zap.Logger, err error, req zapstackdri
 		case codes.OK:
 			log.Debug("grpc request processed by the server successfully",
 				zap.Object("httpRequest", req),
-				operation.FromContextLast(ctx),
+				operation.FromContextLast(ctx, producer),
 			)
 		case codes.Internal:
 			log.Error("grpc unary request processed by the server with error",
 				zap.Object("httpRequest", req),
-				operation.FromContextLast(ctx),
+				operation.FromContextLast(ctx, producer),
 				zap.String("error", st.Message()),
 			)
 		default:
 			log.Warn("grpc unary request processed by the server but something went wrong",
 				zap.Object("httpRequest", req),
-				operation.FromContextLast(ctx),
+				operation.FromContextLast(ctx, producer),
 			)
 		}
 		return
@@ -91,7 +97,7 @@ func logRequest(ctx context.Context, log *zap.Logger, err error, req zapstackdri
 
 	log.Error("grpc request processed by the server with unhandled error",
 		zap.Object("httpRequest", req),
-		operation.FromContextLast(ctx),
+		operation.FromContextLast(ctx, producer),
 		zap.Error(err),
 	)
 }
