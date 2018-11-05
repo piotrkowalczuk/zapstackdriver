@@ -3,7 +3,7 @@ package operation
 import (
 	"context"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -56,7 +56,7 @@ func fromContext(ctx context.Context, first, last bool, producer string) zapcore
 		})
 	}
 	return zap.Object("operation", operation{
-		id:       uuid.NewRandom(),
+		id:       uuid.New(),
 		first:    first,
 		last:     last,
 		producer: producer,
