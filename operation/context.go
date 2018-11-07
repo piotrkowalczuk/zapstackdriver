@@ -33,7 +33,7 @@ func (o operation) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 
 // WithContext returns a copy of parent in which the value associated with key is random UUID.
 func WithContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, contextKey, uuid.NewRandom())
+	return context.WithValue(ctx, contextKey, uuid.New())
 }
 
 func FromContext(ctx context.Context, producer string) zapcore.Field {
