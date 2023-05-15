@@ -47,15 +47,16 @@ func FromContextLast(ctx context.Context, producer string) zapcore.Field {
 }
 
 func fromContext(ctx context.Context, first, last bool, producer string) zapcore.Field {
+	const key = "logging.googleapis.com/operation"
 	if id, ok := ctx.Value(contextKey).(uuid.UUID); ok {
-		return zap.Object("operation", operation{
+		return zap.Object(key, operation{
 			id:       id,
 			first:    first,
 			last:     last,
 			producer: producer,
 		})
 	}
-	return zap.Object("operation", operation{
+	return zap.Object(key, operation{
 		id:       uuid.New(),
 		first:    first,
 		last:     last,

@@ -73,7 +73,7 @@ func (e *Encoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffe
 	}
 
 	if ent.Caller.Defined {
-		fields = append(fields, zap.Object("sourceLocation", reportLocation{
+		fields = append(fields, zap.Object("logging.googleapis.com/sourceLocation", reportLocation{
 			File: ent.Caller.File,
 			Line: ent.Caller.Line,
 		}))
